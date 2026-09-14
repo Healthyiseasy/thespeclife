@@ -1,0 +1,22 @@
+- main [ref=f10e2]:
+  - generic [ref=f10e3]:
+    - generic [ref=f10e4]: / AI STACK SCOUT
+    - generic [ref=f10e5]: The AI stack for people who don't have time to test it
+  - list [ref=f10e10]:
+    - listitem [ref=f10e11]: One stack taken apart each Tuesday
+    - listitem [ref=f10e12]: What it cost, what it replaced
+    - listitem [ref=f10e13]: Read in four minutes
+  - generic [ref=f10e15]:
+    - generic [ref=f10e16]: / Subscribe
+    - generic [ref=f10e17]:
+      - textbox "/ Subscribe" [ref=f10e18]:
+        - /placeholder: name@company.com
+      - button "Subscribe" [ref=f10e19] [cursor=pointer]
+    - status [ref=f10e20]
+  - generic [ref=f10e22]:
+    - generic [ref=f10e23]: Operators subscribed
+    - paragraph [ref=f10e26]: 1,200
+  - paragraph [ref=f10e28]:
+    - text: No spam. Unsubscribe anytime.
+    - link "Privacy" [ref=f10e29] [cursor=pointer]:
+      - /url: privacy.html

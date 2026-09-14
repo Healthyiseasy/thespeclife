@@ -1,0 +1,100 @@
+- generic [active] [ref=f7e1]:
+  - generic [aria-hidden]:
+    - generic:
+      - list:
+        - listitem: Claude·
+        - listitem: GPT-5·
+        - listitem: Gemini·
+        - listitem: Llama·
+        - listitem: Mistral·
+        - listitem: Grok·
+        - listitem: DeepSeek·
+        - listitem: Qwen·
+        - listitem: Azure AI·
+        - listitem: AWS Bedrock·
+        - listitem: Vertex AI·
+        - listitem: Databricks·
+        - listitem: Snowflake·
+        - listitem: Palantir·
+        - listitem: ServiceNow·
+        - listitem: Salesforce·
+        - listitem: NVIDIA·
+        - listitem: Hugging Face·
+        - listitem: LangChain·
+        - listitem: Pinecone·
+        - listitem: Weights & Biases·
+        - listitem: Modal·
+        - listitem: Claude Code·
+        - listitem: Cursor·
+        - listitem: GitHub Copilot·
+        - listitem: Replit·
+        - listitem: Vercel·
+        - listitem: Linear·
+        - listitem: Notion·
+        - listitem: Figma·
+        - listitem: Slack·
+        - listitem: HubSpot·
+        - listitem: Stripe·
+        - listitem: Shopify·
+        - listitem: Zapier·
+        - listitem: Airtable·
+      - list:
+        - listitem: Claude·
+        - listitem: GPT-5·
+        - listitem: Gemini·
+        - listitem: Llama·
+        - listitem: Mistral·
+        - listitem: Grok·
+        - listitem: DeepSeek·
+        - listitem: Qwen·
+        - listitem: Azure AI·
+        - listitem: AWS Bedrock·
+        - listitem: Vertex AI·
+        - listitem: Databricks·
+        - listitem: Snowflake·
+        - listitem: Palantir·
+        - listitem: ServiceNow·
+        - listitem: Salesforce·
+        - listitem: NVIDIA·
+        - listitem: Hugging Face·
+        - listitem: LangChain·
+        - listitem: Pinecone·
+        - listitem: Weights & Biases·
+        - listitem: Modal·
+        - listitem: Claude Code·
+        - listitem: Cursor·
+        - listitem: GitHub Copilot·
+        - listitem: Replit·
+        - listitem: Vercel·
+        - listitem: Linear·
+        - listitem: Notion·
+        - listitem: Figma·
+        - listitem: Slack·
+        - listitem: HubSpot·
+        - listitem: Stripe·
+        - listitem: Shopify·
+        - listitem: Zapier·
+        - listitem: Airtable·
+  - main [ref=f7e2]:
+    - generic [ref=f7e3]:
+      - paragraph [ref=f7e4]: / THE SIGNAL
+      - heading "The Signal for people who don't have time to test it" [level=1] [ref=f7e5]:
+        - generic [ref=f7e6]: The Signal
+        - generic [ref=f7e7]: for people who
+        - generic [ref=f7e8]: don't have time
+        - generic [ref=f7e9]: to test it
+    - list [ref=f7e14]:
+      - listitem [ref=f7e15]: One stack taken apart each Tuesday
+      - listitem [ref=f7e16]: What it cost, what it replaced
+      - listitem [ref=f7e17]: Read in four minutes
+    - generic [ref=f7e19]:
+      - generic [ref=f7e20]: / Subscribe
+      - generic [ref=f7e21]:
+        - textbox "/ Subscribe" [ref=f7e22]:
+          - /placeholder: name@company.com
+        - button "Subscribe" [ref=f7e23] [cursor=pointer]
+      - status [ref=f7e24]
+    - paragraph [ref=f7e26]:
+      - text: No spam. Unsubscribe anytime.
+      - link "Privacy" [ref=f7e27] [cursor=pointer]:
+        - /url: privacy.html

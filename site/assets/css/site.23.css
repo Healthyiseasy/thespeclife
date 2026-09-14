@@ -1,0 +1,596 @@
+/* ==========================================================================
+   AI STACK SCOUT — single-screen subscribe page
+   Design system measured from:
+     output/web3.esqrd.co/TEARDOWN.md   (sphere, hairline CTA box, Play caps)
+     output/briq.marketing/TEARDOWN.md  (eyebrow recipe, numeral inversion, motion)
+   Gold (#998963) from esqrd is deliberately dropped.
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Play';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/Play-Regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+                 U+02DC, U+2000-206F, U+20AC, U+2122, U+2212, U+FEFF, U+FFFD;
+}
+
+/* --------------------------------------------------------------------------
+   1. Tokens
+   -------------------------------------------------------------------------- */
+:root {
+  /* Bumped on every CSS change; index.html checks it matches. */
+  --build: 23;
+
+  /* Palette. Ratios are against --ground (#000000), WCAG 2.x. */
+  --ground:     #000000;              /* page ground                          */
+  --surface:    #101010;              /* esqrd rendered hero avg              */
+  --text:       #FFFFFF;              /* 21.00:1                              */
+  --muted:      rgba(255,255,255,.6); /*  7.37:1 — briq's .4 measures 3.86, fails body AA */
+  --hairline:   rgba(255,255,255,.5); /* esqrd .btn--default border           */
+  --rule:       rgba(255,255,255,.2); /* briq decorative divider              */
+
+  --lime:       #00FF41;              /* matrix green, 15.38:1 on ground      */
+  --lime-dark:  #00CC34;              /* hover/pressed, 11.55:1               */
+  --on-lime:    #0A0A0A;              /* 14.50:1 on lime. NEVER white on lime */
+
+  /* Type. Every role floors at 12px so 768 and 390 stay legible —
+     briq's .833vw root yields 8px labels at 768; not copied. */
+  --fs-display: clamp(30px, 3.4vw, 48px);
+  --fs-eyebrow: clamp(12px, 1.05vw, 15px);
+  --fs-body:    clamp(12px, 1.05vw, 15px);
+  --fs-support: clamp(18px, 1.575vw, 22.5px);   /* 1.5x --fs-body */
+  --fs-numeral: clamp(40px, 5.2vw, 76px);
+  --fs-ui:      clamp(12px, 1.05vw, 15px);
+  --fs-fine:    clamp(12px, .85vw, 12px);
+
+  /* Tracking — locked by brief: -7% display, +17% eyebrow */
+  --ls-display: -.07em;
+  --ls-eyebrow:  .17em;
+
+  /* Spacing — esqrd rhythm (30/16/20/60), briq eyebrow gap 22.5px */
+  --gap-eyebrow: 22.5px;
+  --pad:         clamp(20px, 4.16vw, 60px);
+
+  --ease: cubic-bezier(.625, .05, 0, 1);   /* briq's single transition curve */
+
+  /* Marquee. Height is a reserved band, not a token — .stage adds it to its
+     own top padding so the strip can never sit on the eyebrow. */
+  /* Grid column for the centre stack. Sized for the COPY either side of it,
+     not for the sphere — the canvas is decoupled and overhangs this freely.
+     Held at the form's own 460px max-width so narrowing it to widen the
+     headline column costs the subscribe block nothing. */
+  --sphere-col:    clamp(320px, 32vw, 460px);
+
+  /* The canvas may be wider than its column and overhang it symmetrically —
+     the sphere is what must clear the copy, not the canvas box, and the
+     canvas sits below the copy in z-order. Halo edge lands at .94x the
+     canvas's smaller dimension, so this drives sphere size.
+     --canvas-rise lifts it above page centre to buy room off the form. */
+  --sphere-size:   clamp(340px, 45vw, 648px);
+
+  /* The bitmap is larger than the sphere it holds. Halo points peak at 1.32x
+     the nominal radius (perspective maxes at theta 53.7deg, not at the
+     silhouette) and their glow adds another 0.06x, so dots reach 1.37x. The
+     canvas is padded by this factor and sphere.js divides its fit by the same
+     number, so the sphere renders at exactly --sphere-size either way.
+     sphere.js reads this straight off :root — one source of truth. */
+  --canvas-pad:    1.4;
+  --canvas-w:      calc(var(--sphere-size) * var(--canvas-pad));
+  --canvas-rise:   54px;
+
+  --marquee-h:     48px;
+  --marquee-fs:    24px;
+  --marquee-speed: 291s;   /* linear; holds ~27px/s at 46 names, 7849px/copy */
+  --marquee-fade:  24px;
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset
+   -------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  /* Set on html too: overflow on body only *propagates* to the viewport, and
+     Chrome does not propagate `clip`, leaving the page scrollable by script
+     wherever the padded canvas overhangs. */
+  overflow: hidden;
+  overflow: clip;
+}
+
+body {
+  background: var(--ground);
+  color: var(--text);
+  font-family: 'Play', 'Trebuchet MS', system-ui, sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+  /* The padded canvas deliberately overhangs the viewport. `hidden` hides it
+     but still leaves a scroll container that scrollTo can move; `clip` is not
+     scrollable at all. `hidden` stays first as the fallback. */
+  overflow: hidden;
+  overflow: clip;
+}
+
+a { color: inherit; }
+
+/* --------------------------------------------------------------------------
+   3. Stage — sphere top-centre, form centred directly beneath it
+   --------------------------------------------------------------------------
+   Row 1 is a square cell the canvas fills, so the sphere sits level with the
+   hero block rather than mid-page. Row 2 is the centred subscribe stack. The
+   copy keeps its own columns, so nothing can cross into the sphere's box.  */
+.stage {
+  position: relative;
+  display: grid;
+  height: 100svh;
+  min-height: 100svh;
+  padding: var(--pad);
+  padding-top: calc(var(--pad) + var(--marquee-h));   /* reserve the marquee band */
+  gap: clamp(16px, 1.7vw, 24px);
+  grid-template-columns: 1fr minmax(300px, var(--sphere-col)) 1fr;
+  grid-template-rows:    auto minmax(0, 1fr);
+  grid-template-areas:
+    "tl  core  tr"
+    ".   core  br";
+}
+
+/* Centre column. The canvas fills it and is nudged up by half the marquee
+   band, which puts the sphere on the true page centre rather than the centre
+   of the content box. The form sits at the column's foot. */
+.core {
+  grid-area: core;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Shell pages (thank-you, privacy): same shell, no sphere, content scrolls
+   inside the grid so body{overflow:hidden} still holds. */
+.stage--doc {
+  grid-template-columns: minmax(0, 68ch);
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    "tl"
+    "br";
+  justify-content: start;
+  overflow-y: auto;
+}
+.stage--doc .display { font-size: clamp(28px, 3.2vw, 44px); }
+.stage--doc .zone--br { align-items: flex-start; text-align: left; }
+
+.zone       { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.zone--tl   { grid-area: tl;   align-items: flex-start;  justify-content: flex-start; }
+.zone--tr   { grid-area: tr;   align-items: flex-end;    justify-content: flex-start; text-align: right; }
+.zone--br   { grid-area: br;   align-items: flex-end;    justify-content: flex-end;   text-align: right; }
+.zone--cta  { grid-area: cta;  align-items: center;      justify-content: flex-start; }
+
+
+/* Absolutely positioned so the canvas can never contribute its intrinsic
+   size back to the grid — a canvas left in flow feeds its own width/height
+   attributes into the ResizeObserver and grows without bound. */
+/* Positioning context for the canvas. `display: contents` here means the
+   canvas still resolves against .core, so the desktop geometry is unchanged;
+   the stacked layout turns it into a real box (see below). */
+.core__stage { display: contents; }
+
+#sphere {
+  position: absolute;
+  display: block;
+  /* Square, so min(w,h) — which is what drives sphere size — is exactly
+     --canvas-w. Offsets keep the sphere's centre where it was. */
+  width: var(--canvas-w);
+  height: var(--canvas-w);
+  left: calc(50% - var(--canvas-w) / 2);
+  top: calc(50% - var(--canvas-w) / 2 - var(--marquee-h) / 2 - var(--canvas-rise));
+}
+
+/* --------------------------------------------------------------------------
+   4. Type roles
+   -------------------------------------------------------------------------- */
+
+/* Eyebrow — briq Variant A. The "/ " is two literal typed characters:
+   no ::before, no border, no dot. 15/18 lime, 22.5px to the heading. */
+.eyebrow {
+  margin: 0;
+  font-size: var(--fs-eyebrow);
+  line-height: 1.2;
+  letter-spacing: var(--ls-eyebrow);
+  color: var(--lime);
+}
+
+.display {
+  margin: 0;                 /* the eyebrow that this offset cleared is gone */
+  font-size: var(--fs-display);
+  line-height: .85;
+  letter-spacing: var(--ls-display);
+  font-weight: 400;
+}
+.display .line { display: block; }
+
+.support {
+  margin: 0;
+  font-size: var(--fs-support);
+  line-height: 1.35;
+  letter-spacing: .06em;
+  color: var(--muted);
+  max-width: none;      /* let it use the full right column */
+  text-wrap: pretty;
+}
+
+.fine {
+  margin: 0;
+  font-size: var(--fs-fine);
+  line-height: 1.4;
+  letter-spacing: .1em;
+  color: var(--muted);
+}
+.fine a {
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+  transition: color .375s var(--ease), border-color .375s var(--ease);
+}
+.fine a:hover,
+.fine a:focus-visible { color: var(--lime); border-bottom-color: var(--lime); }
+
+/* --------------------------------------------------------------------------
+   5. CTA — label + beehiiv embed container
+   -------------------------------------------------------------------------- */
+.cta { width: 100%; max-width: 460px; text-align: center; }
+
+.cta__label {
+  display: block;
+  margin-bottom: 15px;
+  font-size: var(--fs-eyebrow);
+  line-height: 1.2;
+  letter-spacing: var(--ls-eyebrow);
+  color: var(--lime);
+}
+
+/* beehiiv's loader injects a cross-origin iframe here. Nothing inside it is
+   reachable from this stylesheet — colour and type are set in beehiiv's own
+   embed builder. All we own is the box around it: keep it transparent so the
+   page's black shows through wherever the iframe itself is transparent. */
+.cta__embed {
+  width: 100%;
+  background: transparent;
+  color-scheme: dark;
+}
+.cta__embed iframe {
+  display: block;
+  width: 100% !important;
+  max-width: 100%;
+  margin: 0 auto;
+  border: 0;
+  background: transparent;
+  color-scheme: dark;
+}
+
+/* --------------------------------------------------------------------------
+   6. Grain — esqrd film-grain pass (intensity 3), CSS only, zero JS
+   -------------------------------------------------------------------------- */
+.grain {
+  position: fixed;
+  inset: -100%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: .045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-drift 1.2s steps(6) infinite,
+             grain-breathe 9s ease-in-out infinite;
+}
+@keyframes grain-breathe {
+  0%, 100% { opacity: .032; }
+  50%      { opacity: .058; }
+}
+@keyframes grain-drift {
+  0%   { transform: translate(0, 0); }
+  16%  { transform: translate(-3%, 2%); }
+  33%  { transform: translate(2%, -4%); }
+  50%  { transform: translate(-4%, -2%); }
+  66%  { transform: translate(3%, 3%); }
+  83%  { transform: translate(-2%, 4%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Copy sits above the canvas and the grain */
+.zone { position: relative; z-index: 3; }
+.core { z-index: 1; }
+.core .cta { position: relative; z-index: 3; }
+
+/* Short viewports. --marquee-h and --canvas-rise are fixed px while every
+   width here is vw, so as the window gets shorter the sphere's centre rises
+   toward a headline whose bottom edge is pinned by the top padding — and it
+   clips the copy. Cap the canvas against height as well. Engages only below
+   900px tall, so the 1440x900 reference is untouched. */
+@media (max-height: 899px) {
+  :root { --sphere-size: clamp(320px, min(45vw, 66vh), 648px); }
+}
+
+/* --------------------------------------------------------------------------
+   8. Stacked — under 1024. Sphere takes the full width, form beneath it.
+   Corner-pinning only exists at 1024 and up.
+
+   -------------------------------------------------------------------------- */
+@media (max-width: 1023px) {
+  .stage {
+    /* Same six blocks, restacked. Nothing is hidden and nothing is
+       duplicated — the sphere becomes the flexible row and absorbs slack. */
+    /* Under 1024 the side columns are too narrow to sit beside a sphere this
+       size, so the whole thing stacks and the canvas takes the full width. */
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(180px, 1fr) auto auto;
+    /* cta follows the sphere directly here too, so the form sits under the
+       sphere at every width; the support lines drop below it. */
+    grid-template-areas:
+      "tl"
+      "core"
+      "tr"
+      "br";
+    gap: clamp(12px, 2.4vw, 20px);
+  }
+
+  .zone--tr,
+  .zone--br {
+    align-items: flex-start;
+    text-align: left;
+    justify-content: flex-start;
+  }
+
+  /* Stacked, the form is a sibling row inside .core rather than an overlay,
+     so the canvas gets only the space above it and the sphere cannot run
+     behind the field. minmax(0,1fr) keeps the track independent of the
+     canvas's intrinsic size, which is what stops the ResizeObserver loop. */
+  .core {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);   /* implicit col auto-sizes to 284px */
+    grid-template-rows: minmax(0, 1fr) auto;
+    row-gap: clamp(12px, 2.4vw, 20px);
+    /* .core is a centred flex column on desktop; as a grid here that would
+       shrink-wrap both rows, collapsing the canvas wrapper to zero height. */
+    justify-items: stretch;
+    align-items: stretch;
+  }
+  /* The wrapper becomes the grid row and the positioning context. The canvas
+     is absolute inside it, so its percentage width AND height resolve against
+     a definite box and it can never feed its own size back into layout — an
+     in-flow canvas with a percentage height falls back to its width/height
+     attributes, which the ResizeObserver then grows without bound. */
+  .core__stage {
+    display: block;
+    position: relative;
+    min-height: 0;
+  }
+  #sphere {
+    position: absolute;
+    width:  calc(100% * var(--canvas-pad));
+    height: calc(100% * var(--canvas-pad));
+    left: calc((100% - 100% * var(--canvas-pad)) / 2);
+    top:  calc((100% - 100% * var(--canvas-pad)) / 2);
+  }
+  .cta { max-width: 460px; margin: 0 auto; }
+
+  /* Support collapses from a stacked list to one wrapped run */
+  .support { max-width: none; }
+
+}
+
+
+/* --------------------------------------------------------------------------
+   9. Marquee — top-edge strip. Pure CSS: two identical lists in one track,
+   translated -50% so the seam lands exactly on the repeat. No JS.
+   -------------------------------------------------------------------------- */
+.marquee {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  height: var(--marquee-h);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  /* 24px fade at both edges so names dissolve instead of being chopped */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0,
+    #000 var(--marquee-fade), #000 calc(100% - var(--marquee-fade)), transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0,
+    #000 var(--marquee-fade), #000 calc(100% - var(--marquee-fade)), transparent 100%);
+}
+
+.marquee__track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee-scroll var(--marquee-speed) linear infinite;
+}
+
+.marquee__list {
+  display: flex;
+  flex: none;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--marquee-fs);
+  line-height: 1;
+  letter-spacing: .1em;
+  color: var(--lime);
+  white-space: nowrap;
+}
+
+/* ::after on EVERY item, not `li + li::before` — otherwise the join between
+   the two copies loses its separator and the loop visibly stutters. */
+.marquee__list li::after {
+  content: '\00b7';
+  color: var(--lime);
+  margin: 0 .9em;
+}
+
+@keyframes marquee-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+
+/* --------------------------------------------------------------------------
+   Background geometry — behind the sphere (z 1) and all copy (z 3).
+   Values from output/web3.esqrd.co/TEARDOWN.md: 1px hairline
+   rgba(255,255,255,.5); hex badge fill #1B1B1B/#2B2B2B with a 0.5px #A1A0A0
+   stroke; 6 hexagons in the hero scene.
+   Ring positions/rotations were NOT captured (GLB geometry) — those are mine.
+   -------------------------------------------------------------------------- */
+.geo {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  fill: none;
+}
+
+/* Rings are emitted at real coordinates rather than scale()-d from a unit
+   hexagon. vector-effect is NOT an inherited property, so setting it on a
+   <use> never reaches the cloned shape and a 1-unit stroke under scale(560)
+   paints 560 units wide. Real coordinates remove the dependency. */
+.geo__rings polygon {
+  stroke: rgba(255, 255, 255, .10);
+  stroke-width: 1;
+}
+.geo__marks path { stroke: rgba(255, 255, 255, .5); stroke-width: 1; opacity: .3; }
+.geo__segs line  { stroke: #fff; stroke-width: 1; opacity: .34; }
+
+.badge__hex {
+  fill: #1B1B1B;
+  stroke: #A1A0A0;
+  stroke-width: .5;
+  opacity: .6;
+}
+.badge__icon {
+  fill: none;
+  stroke: rgba(255, 255, 255, .4);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Slower than the sphere, which turns once per ~114s. */
+.geo__rings {
+  transform-box: view-box;
+  transform-origin: 720px 396px;
+  animation: geo-drift 420s linear infinite;
+}
+@keyframes geo-drift { to { transform: rotate(360deg); } }
+
+.geo__segs line { animation: geo-pulse 7s ease-in-out infinite; }
+.geo__segs .s2 { animation-delay: -2.4s; }
+.geo__segs .s3 { animation-delay: -4.8s; }
+@keyframes geo-pulse { 0%, 100% { opacity: .2; } 50% { opacity: .46; } }
+
+/* Stacked layouts (<1024): one ring and two badges, nothing else. The SVG is
+   authored in a fixed 1440x900 viewBox while the page reflows, so the desktop
+   anchors no longer line up — marks and segments are dropped rather than left
+   to land on the copy, and the badges move to x 500/940, inside the crop at
+   every stacked width (the visible viewBox band is 383-1057 at 768,
+   512-928 at 390x844 and 457-983 at 390x667; x 560/880 clears all three with
+   the 27-unit badge radius). The ring stays full size so it still bleeds. */
+@media (max-width: 1023px) {
+  .geo__rings polygon:nth-child(1),
+  .geo__rings polygon:nth-child(3) { display: none; }
+  .geo__marks,
+  .geo__segs { display: none; }
+  .geo__badges .badge:nth-child(n+3) { display: none; }
+  .geo__badges .badge:nth-child(1) { transform: translate(560px, 300px); }
+  .geo__badges .badge:nth-child(2) { transform: translate(880px, 470px); }
+}
+
+/* --------------------------------------------------------------------------
+   Article-point label — hover reveal, no click target, no navigation.
+   Fades only; it never animates position, it just tracks its dot.
+   -------------------------------------------------------------------------- */
+.poi {
+  position: fixed;
+  z-index: 5;
+  max-width: 210px;
+  font-size: var(--fs-fine);
+  line-height: 1.35;
+  letter-spacing: .08em;
+  color: var(--text);
+  pointer-events: none;      /* never intercepts, never clickable */
+  opacity: 0;
+  transition: opacity .28s var(--ease);
+  text-wrap: pretty;
+}
+.poi.is-on { opacity: 1; }
+
+/* No hover, no interaction — rather than ship a broken tap target. */
+@media (hover: none), (pointer: coarse) { .poi { display: none; } }
+
+/* --------------------------------------------------------------------------
+   Corner crosshairs — esqrd's 1px rgba(255,255,255,.5) hairline, its most-used
+   decorative primitive (60 uses). They sit in the padding gutter, clear of the
+   headline and the sphere, and breathe on a staggered cycle.
+   -------------------------------------------------------------------------- */
+.ticks { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+.ticks i {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  opacity: .28;
+  animation: tick-breathe 11s ease-in-out infinite;
+}
+.ticks i::before,
+.ticks i::after {
+  content: '';
+  position: absolute;
+  background: var(--hairline);
+}
+.ticks i::before { left: 0; top: 6px; width: 13px; height: 1px; }
+.ticks i::after  { top: 0; left: 6px; width: 1px; height: 13px; }
+
+/* 16px from the viewport edge — inside the padding gutter, so they never
+   touch the content box. */
+.ticks i:nth-child(1) { top: calc(var(--marquee-h) + 10px); left: 16px;  animation-delay: 0s; }
+.ticks i:nth-child(2) { top: calc(var(--marquee-h) + 10px); right: 16px; animation-delay: -2.7s; }
+.ticks i:nth-child(3) { bottom: 16px; left: 16px;                        animation-delay: -5.4s; }
+.ticks i:nth-child(4) { bottom: 16px; right: 16px;                       animation-delay: -8.1s; }
+
+/* Under 1024 the gutter is only 20px — no room for them without collisions. */
+@media (max-width: 1023px) { .ticks { display: none; } }
+
+@keyframes tick-breathe {
+  0%, 100% { opacity: .25; }
+  50%      { opacity: .6; }
+}
+
+/* --------------------------------------------------------------------------
+   10. Reduced motion — respected throughout
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .grain { animation: none; }
+
+  /* held at frame 0 rather than removed, so the strip still reads */
+  .marquee__track { animation-play-state: paused; }
+
+  .grain  { opacity: .045; }
+  .geo__rings, .geo__segs line { animation: none; }
+  .ticks i { animation: none; opacity: .35; }
+  .poi { display: none; }
+
+  [data-scramble] { visibility: visible; }
+
+  *, *::before, *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

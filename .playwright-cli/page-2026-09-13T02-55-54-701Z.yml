@@ -1,0 +1,91 @@
+- generic [active] [ref=f6e1]:
+  - generic [aria-hidden]:
+    - generic:
+      - list:
+        - listitem: Claude·
+        - listitem: GPT-5·
+        - listitem: Gemini·
+        - listitem: Llama·
+        - listitem: Mistral·
+        - listitem: Grok·
+        - listitem: DeepSeek·
+        - listitem: Qwen·
+        - listitem: Azure AI·
+        - listitem: AWS Bedrock·
+        - listitem: Vertex AI·
+        - listitem: Databricks·
+        - listitem: Snowflake·
+        - listitem: Palantir·
+        - listitem: ServiceNow·
+        - listitem: Salesforce·
+        - listitem: NVIDIA·
+        - listitem: Hugging Face·
+        - listitem: LangChain·
+        - listitem: Pinecone·
+        - listitem: Weights & Biases·
+        - listitem: Modal·
+        - listitem: Claude Code·
+        - listitem: Cursor·
+        - listitem: GitHub Copilot·
+        - listitem: Replit·
+        - listitem: Vercel·
+        - listitem: Linear·
+        - listitem: Notion·
+        - listitem: Figma·
+        - listitem: Slack·
+        - listitem: HubSpot·
+        - listitem: Stripe·
+        - listitem: Shopify·
+        - listitem: Zapier·
+        - listitem: Airtable·
+      - list:
+        - listitem: Claude·
+        - listitem: GPT-5·
+        - listitem: Gemini·
+        - listitem: Llama·
+        - listitem: Mistral·
+        - listitem: Grok·
+        - listitem: DeepSeek·
+        - listitem: Qwen·
+        - listitem: Azure AI·
+        - listitem: AWS Bedrock·
+        - listitem: Vertex AI·
+        - listitem: Databricks·
+        - listitem: Snowflake·
+        - listitem: Palantir·
+        - listitem: ServiceNow·
+        - listitem: Salesforce·
+        - listitem: NVIDIA·
+        - listitem: Hugging Face·
+        - listitem: LangChain·
+        - listitem: Pinecone·
+        - listitem: Weights & Biases·
+        - listitem: Modal·
+        - listitem: Claude Code·
+        - listitem: Cursor·
+        - listitem: GitHub Copilot·
+        - listitem: Replit·
+        - listitem: Vercel·
+        - listitem: Linear·
+        - listitem: Notion·
+        - listitem: Figma·
+        - listitem: Slack·
+        - listitem: HubSpot·
+        - listitem: Stripe·
+        - listitem: Shopify·
+        - listitem: Zapier·
+        - listitem: Airtable·
+  - main [ref=f6e2]:
+    - generic [ref=f6e3]: Techtopia All the news None of the noise
+    - paragraph [ref=f6e6]: Each Thursday we review the hottest stories in tech, software, and AI
+    - generic [ref=f6e10]:
+      - generic [ref=f6e11]: / Subscribe
+      - generic [ref=f6e12]:
+        - textbox "/ Subscribe" [ref=f6e13]:
+          - /placeholder: name@company.com
+        - button "Subscribe" [ref=f6e14] [cursor=pointer]
+      - status [ref=f6e15]
+    - paragraph [ref=f6e17]:
+      - text: No spam. Unsubscribe anytime.
+      - link "Privacy" [ref=f6e18] [cursor=pointer]:
+        - /url: privacy.html
