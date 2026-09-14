@@ -1,3 +1,11 @@
+# Local tooling output — never part of the deployed site
+.playwright-cli/
+.playwright/
 output/
 node_modules/
 .DS_Store
+
+# Hostinger serves the repo root as the web root, so anything committed here
+# is publicly fetchable. These are kept local only.
+tools/
+README.md
