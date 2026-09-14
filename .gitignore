@@ -1,4 +1,5 @@
 # Local tooling output — never part of the deployed site
+.claude/
 .playwright-cli/
 .playwright/
 output/
