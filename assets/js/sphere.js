@@ -18,19 +18,19 @@
      `i` is an index into the dot cloud (0..2999) and fixes WHERE on the
      sphere the point sits; `t` is the headline that reveals next to it.
      Add or remove entries freely — everything else adapts. Keep `i` values
-     distinct and under 3000. PLACEHOLDER COPY.
+     distinct and under 3000.
      ====================================================================== */
   var ARTICLES = [
-    { i:  137, t: 'Anthropic ships a 1M-token context window' },
-    { i:  431, t: 'Nvidia\u2019s next architecture leaks early' },
-    { i:  688, t: 'The open-weights gap narrows again' },
-    { i:  970, t: 'Snowflake bets the company on inference' },
-    { i: 1244, t: 'Copilot pricing quietly doubles' },
-    { i: 1503, t: 'A serious look at agent reliability' },
-    { i: 1789, t: 'Vector databases were a feature, not a product' },
-    { i: 2065, t: 'Figma\u2019s design-to-code play lands' },
-    { i: 2338, t: 'Stripe rebuilds fraud on a foundation model' },
-    { i: 2634, t: 'What Bedrock costs at real volume' }
+    { i:  137, t: 'Gadget of the Week, every Thursday' },
+    { i:  431, t: 'Tech reviews in plain English' },
+    { i:  688, t: 'Tutorials that make you dangerous with tech' },
+    { i:  970, t: 'AI explained without the hype' },
+    { i: 1244, t: 'Five minutes. All the good stuff.' },
+    { i: 1503, t: 'All the news, none of the noise' },
+    { i: 1789, t: 'The gear worth your money' },
+    { i: 2065, t: 'Smarter tech, better days' },
+    { i: 2338, t: 'Gadget of the Week, every Thursday' },
+    { i: 2634, t: 'Tech reviews in plain English' }
   ];
 
   var canvas = document.getElementById('sphere');
