@@ -59,6 +59,15 @@
     var markup = el.innerHTML;
     var words = wrapWords(el);
 
+    /* lock each word to its final width so the scramble never moves its
+       neighbours or collapses a line (layout shift); the authored markup is
+       restored at the end, so the settled headline is untouched */
+    var widths = words.map(function (span) { return span.getBoundingClientRect().width; });
+    words.forEach(function (span, i) {
+      span.style.display = 'inline-block';
+      span.style.width = widths[i] + 'px';
+    });
+
     var items = words.map(function (span, i) {
       return {
         span: span,
